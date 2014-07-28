@@ -136,7 +136,7 @@ func (t *Tracee) SendSignal(sig syscall.Signal) error {
 	if t.do(func() { err <- syscall.Kill(t.proc.Pid, sig) }) {
 		return <-err
 	}
-	return nil
+	return TraceeExited
 }
 
 // grabs a word at the given address.
@@ -185,7 +185,7 @@ func (t *Tracee) WriteWord(address uintptr, word uint64) (error) {
 	if t.do(func() { err <- poke(t.proc.Pid, address, word) }) {
 		return <-err
 	}
-	return errors.New("unreachable.")
+	return TraceeExited
 }
 
 func (t *Tracee) Write(address uintptr, data []byte) (error) {
@@ -227,7 +227,7 @@ func (t* Tracee) GetIPtr() (uintptr, error) {
 	}) {
 		return <-value, <-errchan
 	}
-	return 0, errors.New("unreachable.")
+	return 0, TraceeExited
 }
 
 func (t* Tracee) SetIPtr(addr uintptr) error {
@@ -242,7 +242,7 @@ func (t* Tracee) SetIPtr(addr uintptr) error {
 	}) {
 		return <-errchan
 	}
-	return errors.New("unreachable")
+	return TraceeExited
 }
 
 // Sends the command to the tracer go routine.	Returns whether the command
