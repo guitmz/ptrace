@@ -188,6 +188,17 @@ func (t *Tracee) WriteWord(address uintptr, word uint64) (error) {
 	return errors.New("unreachable.")
 }
 
+func (t *Tracee) Write(address uintptr, data []byte) (error) {
+	err := make(chan error, 1)
+	if t.do(func() {
+	  _, e := syscall.PtracePokeData(t.proc.Pid, address, data)
+	  err <- e
+	}) {
+	  return <-err
+	}
+	return TraceeExited
+}
+
 // read the registers from the inferior.
 func (t* Tracee) GetRegs() (syscall.PtraceRegs, error) {
 	errchan := make(chan error, 1)
