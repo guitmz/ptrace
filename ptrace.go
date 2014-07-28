@@ -182,7 +182,7 @@ func poke(pid int, address uintptr, word uint64) (error) {
 // Writes the given word into the inferior's address space.
 func (t *Tracee) WriteWord(address uintptr, word uint64) (error) {
 	err := make(chan error, 1)
-	if t.do(func() {	err <- poke(t.proc.Pid, address, word) }) {
+	if t.do(func() { err <- poke(t.proc.Pid, address, word) }) {
 		return <-err
 	}
 	return errors.New("unreachable.")
