@@ -199,6 +199,18 @@ func (t *Tracee) Write(address uintptr, data []byte) (error) {
 	return TraceeExited
 }
 
+// Read grabs memory starting at the given address, for len(data) bytes.
+func (t *Tracee) Read(address uintptr, data []byte) error {
+  err := make(chan error, 1)
+  if t.do(func() {
+    _, e := syscall.PtracePeekData(t.proc.Pid, address, data)
+    err <- e
+  }) {
+    return <-err
+  }
+  return TraceeExited
+}
+
 // read the registers from the inferior.
 func (t* Tracee) GetRegs() (syscall.PtraceRegs, error) {
 	errchan := make(chan error, 1)
