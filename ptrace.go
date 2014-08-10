@@ -34,12 +34,6 @@ func (t *Tracee) Events() <-chan Event {
 	return t.events
 }
 
-// Error returns an error if one occurred, or nil.  It is to be called once
-// after all events have been received from the Tracee.
-func (t *Tracee) Error() error {
-	return <-t.err
-}
-
 // Exec executes a process with tracing enabled, returning the Tracee
 // or an error if an error occurs while executing the process.
 func Exec(name string, argv []string) (*Tracee, error) {
@@ -267,13 +261,22 @@ func (t *Tracee) do(f func()) bool {
 	return false
 }
 
-func (t *Tracee) Close() {
-	close(t.err)
+func (t *Tracee) Close() error {
+	var err error
+	select {
+	case err = <-t.err:
+	default:
+		err = nil
+	}
 	close(t.cmds)
 	t.cmds = nil
+
+	syscall.Kill(t.proc.Pid, syscall.SIGKILL)
+	return err
 }
 
 func (t *Tracee) wait() {
+	defer close(t.err)
 	for {
 		state, err := t.proc.Wait()
 		if err != nil {
