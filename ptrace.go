@@ -124,6 +124,19 @@ func (t *Tracee) Continue() error {
 	return TraceeExited
 }
 
+// Executes the inferior until it hits, or returns from, a system call.
+func (t *Tracee) Syscall() error {
+	if t.cmds == nil {
+		return TraceeExited
+	}
+	errchan := make(chan error, 1)
+	t.cmds <- func() {
+		err := syscall.PtraceSyscall(t.proc.Pid, 0)
+		errchan <- err
+	}
+	return <- errchan
+}
+
 // Sends the given signal to the tracee.
 func (t *Tracee) SendSignal(sig syscall.Signal) error {
 	err := make(chan error, 1)
