@@ -251,6 +251,17 @@ func (t* Tracee) SetIPtr(addr uintptr) error {
 	return TraceeExited
 }
 
+func (t* Tracee) SetRegs(regs syscall.PtraceRegs) error {
+	errchan := make(chan error, 1)
+	if t.do(func() {
+		err := syscall.PtraceSetRegs(t.proc.Pid, &regs)
+		errchan <- err
+	}) {
+		return <-errchan
+	}
+	return TraceeExited
+}
+
 // Sends the command to the tracer go routine.	Returns whether the command
 // was sent or not. The command may not have been sent if the tracee exited.
 func (t *Tracee) do(f func()) bool {
