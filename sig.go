@@ -34,7 +34,7 @@ func get_siginfo(pid int) (Siginfo, error) {
     Signo: int(si.si_signo),
     Errno: int(si.si_errno),
     Code: int(si.si_code),
-    Trapno: int(C.sig_trapno(si)),
+    Trapno: int(0),
     Addr: uintptr(C.sig_addr(si)),
   }
   return siginf, nil
