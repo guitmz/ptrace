@@ -290,6 +290,18 @@ func (t *Tracee) GetSiginfo() (Siginfo, error) {
 	return Siginfo{}, TraceeExited
 }
 
+// Clears the last signal the inferior received.  This could allow the inferior
+// to continue after a segfault, for example.
+func (t *Tracee) ClearSignal() error {
+	errchan := make(chan error, 1)
+	if t.do(func() {
+		errchan <- clear_signals(int(t.proc.Pid))
+	}) {
+		return <-errchan
+	}
+	return TraceeExited
+}
+
 // Sends the command to the tracer go routine.	Returns whether the command
 // was sent or not. The command may not have been sent if the tracee exited.
 func (t *Tracee) do(f func()) bool {
