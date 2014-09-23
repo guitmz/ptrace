@@ -12,7 +12,7 @@
 siginfo_t getsig(pid_t pid) {
   siginfo_t rv;
   memset(&rv, 0, sizeof(siginfo_t));
-  if(ptrace(PTRACE_SETSIGINFO, pid, NULL, &rv) != 0) {
+  if(ptrace(PTRACE_GETSIGINFO, pid, NULL, &rv) != 0) {
     const int err = errno;
     fprintf(stderr, "error grabbing signal: %d\n", err);
     errno = err;
