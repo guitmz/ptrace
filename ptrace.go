@@ -275,6 +275,21 @@ func (t* Tracee) SetRegs(regs syscall.PtraceRegs) error {
 	return TraceeExited
 }
 
+// Reads the signal information for the signal that stopped the inferior.  Only
+// valid if the inferior is stopped due to a signal.
+func (t *Tracee) GetSiginfo() (Siginfo, error) {
+	errchan := make(chan error, 1)
+	value := make(chan Siginfo, 1)
+	if t.do(func() {
+		si, err := get_siginfo(t.proc.Pid)
+		errchan <- err
+		value <- si
+	}) {
+		return <-value, <-errchan
+	}
+	return Siginfo{}, TraceeExited
+}
+
 // Sends the command to the tracer go routine.	Returns whether the command
 // was sent or not. The command may not have been sent if the tracee exited.
 func (t *Tracee) do(f func()) bool {
